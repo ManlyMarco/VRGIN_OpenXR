@@ -99,41 +99,16 @@ namespace VRGIN.Native
             return score;
         }
 
-        public static List<IntPtr> GetRootWindowsOfProcess(int process)
+        private static List<IntPtr> GetRootWindowsOfProcess(int process)
         {
-            IntPtr[] apRet = (new IntPtr[256]);
-            int iCount = 0;
+            var apRet = new List<IntPtr>();
             IntPtr pLast = IntPtr.Zero;
             do {
                 pLast = WindowsInterop.FindWindowEx(IntPtr.Zero, pLast, null, null);
-                uint iProcess_;
-                WindowsInterop.GetWindowThreadProcessId(pLast, out iProcess_);
-                if(iProcess_ == process) apRet[iCount++] = pLast;
+                WindowsInterop.GetWindowThreadProcessId(pLast, out uint iProcess_);
+                if (iProcess_ == process) apRet.Add(pLast);
             } while(pLast != IntPtr.Zero);
-            System.Array.Resize(ref apRet, iCount);
-            return apRet.ToList();
-        }
-
-        private static List<IntPtr> GetChildWindows(IntPtr parent)
-        {
-            var list = new List<IntPtr>();
-            var value = GCHandle.Alloc(list);
-            try
-            {
-                WindowsInterop.Win32Callback callback = EnumWindow;
-                WindowsInterop.EnumChildWindows(parent, callback, GCHandle.ToIntPtr(value));
-                return list;
-            }
-            finally
-            {
-                if (value.IsAllocated) value.Free();
-            }
-        }
-
-        private static bool EnumWindow(IntPtr handle, IntPtr pointer)
-        {
-            (GCHandle.FromIntPtr(pointer).Target as List<IntPtr> ?? throw new InvalidCastException("GCHandle Target could not be cast as List<IntPtr>")).Add(handle);
-            return true;
+            return apRet;
         }
 
         public static string GetWindowText(IntPtr hWnd)
