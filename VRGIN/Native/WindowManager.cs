@@ -99,17 +99,19 @@ namespace VRGIN.Native
             return score;
         }
 
-        private static List<IntPtr> GetRootWindowsOfProcess(int pid)
+        public static List<IntPtr> GetRootWindowsOfProcess(int process)
         {
-            var childWindows = GetChildWindows(IntPtr.Zero);
-            var list = new List<IntPtr>();
-            foreach (var item in childWindows)
-            {
-                WindowsInterop.GetWindowThreadProcessId(item, out var lpdwProcessId);
-                if (lpdwProcessId == pid) list.Add(item);
-            }
-
-            return list;
+            IntPtr[] apRet = (new IntPtr[256]);
+            int iCount = 0;
+            IntPtr pLast = IntPtr.Zero;
+            do {
+                pLast = WindowsInterop.FindWindowEx(IntPtr.Zero, pLast, null, null);
+                uint iProcess_;
+                WindowsInterop.GetWindowThreadProcessId(pLast, out iProcess_);
+                if(iProcess_ == process) apRet[iCount++] = pLast;
+            } while(pLast != IntPtr.Zero);
+            System.Array.Resize(ref apRet, iCount);
+            return apRet.ToList();
         }
 
         private static List<IntPtr> GetChildWindows(IntPtr parent)
