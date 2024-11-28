@@ -13,6 +13,7 @@ namespace VRGIN.Controls.Tools
         protected Controller Owner;
         protected Controller Neighbor;
 
+
         public abstract Texture2D Image { get; }
 
         public GameObject Icon { get; set; }
@@ -30,6 +31,10 @@ namespace VRGIN.Controls.Tools
 
         protected Controller OtherController => Neighbor;
 
+        protected virtual void OnDestroy()
+        {
+
+        }
         protected override void OnAwake()
         {
             base.OnAwake();

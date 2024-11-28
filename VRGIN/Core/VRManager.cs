@@ -40,7 +40,7 @@ namespace VRGIN.Core
 
         public ControlMode Mode { get; private set; }
 
-        public InputSimulator Input { get; internal set; }
+        public IInputSimulator Input { get; internal set; }
 
         public event EventHandler<ModeInitializedEventArgs> ModeInitialized = delegate { };
 

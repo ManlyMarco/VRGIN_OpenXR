@@ -19,13 +19,21 @@ namespace VRGIN.Controls.Handlers
     public class MenuHandler : ProtectedBehaviour
     {
         private Controller _Controller;
-        const float RANGE = 0.25f;
+
+        //const float RANGE = 0.25f;
+
         private const int MOUSE_STABILIZER_THRESHOLD = 30; // pixels
+
         private Controller.Lock _LaserLock = Controller.Lock.Invalid;
+
         private LineRenderer Laser;
+
         private Vector2? mouseDownPosition;
+
         private GUIQuad _Target;
+
         MenuHandler _Other;
+
         private Vector3 _ScaleVector;
         private Buttons _PressedButtons;
         private Controller.TrackpadDirection _LastDirection;
@@ -45,8 +53,8 @@ namespace VRGIN.Controls.Handlers
             base.OnStart();
             VRLog.Info("Menu Handler started");
             _Controller = GetComponent<Controller>();
-            _ScaleVector = new Vector2((float)VRGUI.Width / Screen.width, (float)VRGUI.Height / Screen.height);
             _Other = _Controller.Other.GetComponent<MenuHandler>();
+            _ScaleVector = new Vector2((float)VRGUI.Width / Screen.width, (float)VRGUI.Height / Screen.height);
         }
 
         private void OnRenderModelLoaded()
@@ -348,9 +356,11 @@ namespace VRGIN.Controls.Handlers
         }
         bool IsWithinRange(GUIQuad quad)
         {
-            if (!Laser) return false;
-
-            return (quad.transform.position - Laser.transform.position).magnitude < GetRange(quad);
+            if (Laser)
+            {
+                return (quad.transform.position - Laser.transform.position).magnitude < GetRange(quad);
+            }
+            return false;
             //var normal = -quad.transform.forward;
             ////var otherPos = quad.transform.position;
 

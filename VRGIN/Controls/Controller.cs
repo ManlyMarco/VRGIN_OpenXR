@@ -15,26 +15,28 @@ namespace VRGIN.Controls
     {
         public class Lock
         {
-            public bool IsInvalidating { get; private set; }
-
-            public static readonly Lock Invalid = new Lock();
             private Controller _Controller;
 
-            public bool KeepsTool { get; private set; }
+            public static readonly Lock Invalid = new Lock();
+
+            public bool IsInvalidating { get; private set; }
+
             public bool IsValid { get; private set; }
+
+            public bool KeepsTool { get; private set; }
+
 
             private Lock()
             {
                 IsValid = false;
             }
 
-            internal Lock(Controller controller, bool keepTool)
+            internal Lock(Controller controller)
             {
                 IsValid = true;
                 _Controller = controller;
                 _Controller._Lock = this;
-                _Controller.OnLock(keepTool);
-                KeepsTool = keepTool;
+                _Controller.OnLock();
             }
 
             public void Release()
@@ -42,7 +44,7 @@ namespace VRGIN.Controls
                 if (IsValid)
                 {
                     _Controller._Lock = null;
-                    _Controller.OnUnlock(KeepsTool);
+                    _Controller.OnUnlock();
                     IsValid = false;
                 }
                 else
@@ -58,15 +60,16 @@ namespace VRGIN.Controls
             }
         }
 
-        private bool _Started;
+        //private bool _Started;
+
 
         public SteamVR_Behaviour_Pose Tracking;
 
-        private DeviceLegacyAdapter _Input;
+        protected DeviceLegacyAdapter _Input;
 
         //protected BoxCollider Collider;
 
-        private float? appButtonPressTime;
+        //private float? appButtonPressTime;
 
         public List<Tool> Tools = new List<Tool>();
 
@@ -74,19 +77,19 @@ namespace VRGIN.Controls
 
        // private const float APP_BUTTON_TIME_THRESHOLD = 0.5f;
 
-       // private bool helpShown;
+        //private bool helpShown;
 
         //private List<HelpText> helpTexts;
 
         //private Canvas _Canvas;
 
-        private Lock _Lock = Lock.Invalid;
+        protected Lock _Lock = Lock.Invalid;
 
         //private GameObject _AlphaConcealer;
 
-        public SteamVR_RenderModel Model { get; private set; }
+        public SteamVR_RenderModel Model { get; protected set; }
 
-        public RumbleManager Rumble { get; private set; }
+        public RumbleManager Rumble { get; protected set; }
 
         public virtual int ToolIndex { get; set; }
 
@@ -101,7 +104,7 @@ namespace VRGIN.Controls
 
         public virtual IList<Type> ToolTypes => new List<Type>();
 
-        public bool ToolEnabled
+        public virtual bool ToolEnabled
         {
             get
             {
@@ -148,32 +151,24 @@ namespace VRGIN.Controls
             return TryAcquireFocus(out lockObj);
         }
 
-        public bool TryAcquireFocus(out Lock lockObj, bool keepTool = false)
+        public bool TryAcquireFocus(out Lock lockObj)
         {
             lockObj = null;
-
             if (CanAcquireFocus())
             {
-                lockObj = new Lock(this, keepTool);
+                lockObj = new Lock(this);
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
-        public Lock AcquireFocus(bool keepTool = false)
+        public Lock AcquireFocus()
         {
-            Lock lockObj;
-            if (TryAcquireFocus(out lockObj, keepTool))
+            if (TryAcquireFocus(out var lockObj))
             {
                 return lockObj;
             }
-            else
-            {
-                return Lock.Invalid;
-            }
+            return Lock.Invalid;
         }
 
         public bool CanAcquireFocus()
@@ -185,22 +180,16 @@ namespace VRGIN.Controls
             return true;
         }
 
-        protected virtual void OnLock(bool keepTool)
+        protected virtual void OnLock()
         {
-            if (!keepTool)
-            {
-                ToolEnabled = false;
+            ToolEnabled = false;
                 //_AlphaConcealer.SetActive(false);
-            }
         }
 
-        protected virtual void OnUnlock(bool keepTool)
+        protected virtual void OnUnlock()
         {
-            if (!keepTool)
-            {
-                ToolEnabled = true;
-                //_AlphaConcealer.SetActive(true);
-            }
+            ToolEnabled = true;
+            //_AlphaConcealer.SetActive(true);
         }
 
         protected virtual void OnDestroy()
@@ -209,7 +198,7 @@ namespace VRGIN.Controls
             SteamVR_Events.RenderModelLoaded.Remove(_OnRenderModelLoaded);
         }
 
-        protected void SetUp()
+        protected virtual void SetUp()
         {
             SteamVR_Events.RenderModelLoaded.Listen(_OnRenderModelLoaded);
 
@@ -230,7 +219,7 @@ namespace VRGIN.Controls
             Model.gameObject.layer = 0;
         }
 
-        private void _OnRenderModelLoaded(SteamVR_RenderModel model, bool isLoaded)
+        protected void _OnRenderModelLoaded(SteamVR_RenderModel model, bool isLoaded)
         {
             try
             {
@@ -238,7 +227,7 @@ namespace VRGIN.Controls
                 {
                     VRLog.Info("Render model loaded! rendeModelName: '" + model.renderModelName + "'");
                     gameObject.SendMessageToAll("OnRenderModelLoaded");
-                    OnRenderModelLoaded();
+                    //OnRenderModelLoaded();
                 }
             }
             catch (Exception obj)
@@ -247,12 +236,12 @@ namespace VRGIN.Controls
             }
         }
 
-        private void OnRenderModelLoaded()
-        {
-            //var componentsInChildren = Model.GetComponentsInChildren<Renderer>(true);
-            //foreach (var renderer in componentsInChildren)
-            //    VRLog.Debug($"Name: {renderer.gameObject.name}, Layer: {LayerMask.LayerToName(renderer.gameObject.layer)}, Visible: {renderer.isVisible}, Shader: {renderer.sharedMaterial.shader}");
-        }
+        //private void OnRenderModelLoaded()
+        //{
+        //    //var componentsInChildren = Model.GetComponentsInChildren<Renderer>(true);
+        //    //foreach (var renderer in componentsInChildren)
+        //    //    VRLog.Debug($"Name: {renderer.gameObject.name}, Layer: {LayerMask.LayerToName(renderer.gameObject.layer)}, Visible: {renderer.isVisible}, Shader: {renderer.sharedMaterial.shader}");
+        //}
 
         protected override void OnAwake()
         {
@@ -260,7 +249,7 @@ namespace VRGIN.Controls
             SetUp();
         }
 
-        public void AddTool(Type toolType)
+        public virtual void AddTool(Type toolType)
         {
             if (toolType.IsSubclassOf(typeof(Tool)) && !Tools.Any((Tool tool) => toolType.IsAssignableFrom(tool.GetType())))
             {
@@ -293,8 +282,6 @@ namespace VRGIN.Controls
                 if (tool.enabled) tool.enabled = false;
                 tool.enabled = true;
             }
-
-            _Started = true;
         }
         protected override void OnUpdate()
         {
@@ -328,7 +315,7 @@ namespace VRGIN.Controls
             //appButtonPressTime = null;
         }
 
-        private void TryReleaseLock()
+        protected void TryReleaseLock()
         {
             var input = Input;
             foreach (var item in Enum.GetValues(typeof(EVRButtonId)).OfType<EVRButtonId>())
