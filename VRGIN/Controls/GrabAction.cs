@@ -7,7 +7,7 @@ using VRGIN.Controls;
 using VRGIN.Core;
 using VRGIN.Helpers;
 using UnityEngine;
-using static SteamVR_Controller;
+//using static SteamVR_Controller;
 
 namespace VRGIN.Controls
 {
@@ -16,7 +16,7 @@ namespace VRGIN.Controls
         private Transform transform => Owner.transform;
         private Controller Owner { get; set; }
         private Controller OtherController { get; set; }
-        private Device Controller { get; set; }
+        //private Device Controller { get; set; }
         private Controller.Lock _OtherLock;
 
         private TravelDistanceRumble _TravelRumble;
@@ -26,21 +26,21 @@ namespace VRGIN.Controls
         private const float GRIP_DIFF_THRESHOLD = 0.01f;
         private Vector3 _PrevControllerPos;
         private Quaternion _PrevControllerRot;
-        private const EVRButtonId SECONDARY_SCALE_BUTTON = EVRButtonId.k_EButton_SteamVR_Trigger;
-        private const EVRButtonId SECONDARY_ROTATE_BUTTON = EVRButtonId.k_EButton_Grip;
+        //private const EVRButtonId SECONDARY_SCALE_BUTTON = EVRButtonId.k_EButton_SteamVR_Trigger;
+        //private const ButtonMask SECONDARY_ROTATE_BUTTON = (ButtonMask)ButtonMask.Grip;
         private bool _ScaleInitialized;
         private bool _RotationInitialized;
         private float _InitialControllerDistance;
         private float _InitialIPD;
         private Vector3 _PrevFromTo;
-        private ulong _ButtonMask;
+        private EVRButtonId _ButtonMask;
         private int _DoubleClickPhase;
         private float _DoubleClickDeadline;
 
-        public GrabAction(Controller controller, Device device, ulong buttonMask)
+        public GrabAction(Controller controller, EVRButtonId buttonMask)
         {
             Owner = controller;
-            Controller = device;
+            //Controller = device;
             OtherController = controller.Other;
 
             // Prepare rumble definitions
@@ -72,46 +72,48 @@ namespace VRGIN.Controls
                 _OtherLock.SafeRelease();
             }
         }
-
         public Status HandleGrabbing()
         {
-            if (OtherController.IsTracking && !HasOtherLock())
+            var hasOtherLock = HasOtherLock();
+            if (OtherController.IsTracking && !hasOtherLock)
             {
                 OtherController.TryAcquireFocus(out _OtherLock);
             }
 
-            if (HasOtherLock() && OtherController.Input.GetPressDown(SECONDARY_SCALE_BUTTON))
+            if (hasOtherLock && OtherController.Input.GetPressDown(EVRButtonId.k_EButton_SteamVR_Trigger))
             {
                 _ScaleInitialized = false;
             }
 
-            if (HasOtherLock() && OtherController.Input.GetPressDown(SECONDARY_ROTATE_BUTTON))
+            if (hasOtherLock && OtherController.Input.GetPressDown(EVRButtonId.k_EButton_Grip))
             {
                 _RotationInitialized = false;
             }
 
-            if (!Controller.GetPress(_ButtonMask))
+            if (!Owner.Input.GetPress(_ButtonMask))
             {
                 if (Time.unscaledTime - _GripStartTime < GRIP_TIME_THRESHOLD)
                 {
+                    VRLog.Debug($"HandleGrabbing Quickly");
                     return Status.DoneQuick;
                 }
+                VRLog.Debug($"HandleGrabbing Slow");
                 return Status.DoneSlow;
             }
 
-            if (HasOtherLock() && (OtherController.Input.GetPress(SECONDARY_ROTATE_BUTTON) || OtherController.Input.GetPress(SECONDARY_SCALE_BUTTON)))
+            if (hasOtherLock && (OtherController.Input.GetPress(EVRButtonId.k_EButton_Grip) || OtherController.Input.GetPress(EVRButtonId.k_EButton_SteamVR_Trigger)))
             {
                 var newFromTo = (OtherController.transform.position - transform.position).normalized;
 
-                if (OtherController.Input.GetPress(SECONDARY_SCALE_BUTTON))
-                {
-                    InitializeScaleIfNeeded();
-                    var controllerDistance = Vector3.Distance(OtherController.transform.position, transform.position) * (_InitialIPD / VR.Settings.IPDScale);
-                    float ratio = controllerDistance / _InitialControllerDistance;
-                    VR.Settings.IPDScale = ratio * _InitialIPD;
-                }
+                //if (OtherController.Input.GetPress(EVRButtonId.k_EButton_SteamVR_Trigger))
+                //{
+                //    InitializeScaleIfNeeded();
+                //    var controllerDistance = Vector3.Distance(OtherController.transform.position, transform.position) * (_InitialIPD / VR.Settings.IPDScale);
+                //    float ratio = controllerDistance / _InitialControllerDistance;
+                //    VR.Settings.IPDScale = ratio * _InitialIPD;
+                //}
 
-                if (OtherController.Input.GetPress(SECONDARY_ROTATE_BUTTON))
+                if (OtherController.Input.GetPress(EVRButtonId.k_EButton_Grip))
                 {
                     InitializeRotationIfNeeded();
                     var angleDiff = Calculator.Angle(_PrevFromTo, newFromTo) * VR.Settings.RotationMultiplier;
@@ -128,11 +130,11 @@ namespace VRGIN.Controls
                 {
                     var origin = VR.Camera.SteamCam.origin.transform;
                     //VRLog.Info("Rotate: {0}", NormalizeAngle(diffRot.eulerAngles.y));
-                    if (Controller.GetPress(ButtonMask.Trigger))
+                    if (Owner.Input.GetPress(EVRButtonId.k_EButton_SteamVR_Trigger))
                     {
                         var invRot = _PrevControllerRot * Quaternion.Inverse(transform.rotation);
 
-                        if (Controller.GetPress(ButtonMask.Touchpad))
+                        if (Owner.Input.GetPress(EVRButtonId.k_EButton_SteamVR_Touchpad))
                         {
                             origin.rotation = invRot * origin.rotation;
                         }
@@ -159,13 +161,13 @@ namespace VRGIN.Controls
         {
             if (_DoubleClickPhase == 0)
             {
-                if (Controller.GetPressDown(ButtonMask.Touchpad))
+                if (Owner.Input.GetPressDown(EVRButtonId.k_EButton_SteamVR_Touchpad) || Owner.Input.GetPressDown(EVRButtonId.k_EButton_SteamVR_Trigger))
                 {
                     _DoubleClickPhase = 1;
                     _DoubleClickDeadline = Time.unscaledTime + 0.5f;
                 }
             }
-            else if(_DoubleClickDeadline < Time.unscaledTime)
+            else if (_DoubleClickDeadline < Time.unscaledTime)
             {
                 _DoubleClickPhase = 0;
             }
@@ -175,13 +177,15 @@ namespace VRGIN.Controls
                 {
                     case 1:
                     case 3:
-                        if (Controller.GetPressUp(ButtonMask.Touchpad))
+                        if (Owner.Input.GetPressUp(EVRButtonId.k_EButton_SteamVR_Touchpad) 
+                            || Owner.Input.GetPressUp(EVRButtonId.k_EButton_SteamVR_Trigger))
                         {
                             _DoubleClickPhase++;
                         }
                         break;
                     case 2:
-                        if (Controller.GetPressDown(ButtonMask.Touchpad))
+                        if (Owner.Input.GetPressDown(EVRButtonId.k_EButton_SteamVR_Touchpad)
+                            || Owner.Input.GetPressDown(EVRButtonId.k_EButton_SteamVR_Trigger))
                         {
                             _DoubleClickPhase++;
                         }

@@ -46,30 +46,31 @@ namespace VRGIN.Controls.Handlers
             OnStop();
         }
 
-        protected override void OnUpdate()
-        {
-            base.OnUpdate();
-            _Rumble.Device = _Controller.Tracking;
-        }
+        // Rumble is broken.
+        //protected override void OnUpdate()
+        //{
+        //    base.OnUpdate();
+        //    _Rumble.Device = _Controller.Tracking;
+        //}
 
-        protected void OnTriggerEnter(Collider collider)
-        {
-            if (VR.Interpreter.IsBody(collider))
-            {
-                _TouchCounter++;
-                _Controller.StartRumble(_Rumble);
-                if (_TouchCounter == 1) _Controller.StartRumble(new RumbleImpulse(1000));
-            }
-        }
+        //protected void OnTriggerEnter(Collider collider)
+        //{
+        //    if (VR.Interpreter.IsBody(collider))
+        //    {
+        //        _TouchCounter++;
+        //        _Controller.StartRumble(_Rumble);
+        //        if (_TouchCounter == 1) _Controller.StartRumble(new RumbleImpulse(1000));
+        //    }
+        //}
 
-        protected void OnTriggerExit(Collider collider)
-        {
-            if (VR.Interpreter.IsBody(collider))
-            {
-                _TouchCounter--;
-                if (_TouchCounter == 0) _Controller.StopRumble(_Rumble);
-            }
-        }
+        //protected void OnTriggerExit(Collider collider)
+        //{
+        //    if (VR.Interpreter.IsBody(collider))
+        //    {
+        //        _TouchCounter--;
+        //        if (_TouchCounter == 0) _Controller.StopRumble(_Rumble);
+        //    }
+        //}
 
         protected void OnStop()
         {

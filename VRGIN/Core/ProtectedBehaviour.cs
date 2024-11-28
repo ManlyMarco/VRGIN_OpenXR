@@ -10,36 +10,42 @@ namespace VRGIN.Core
 {
     public class ProtectedBehaviour : MonoBehaviour
     {
-        private static IDictionary<string, double> PerformanceTable = new Dictionary<string, double>();
+        //private static IDictionary<string, double> PerformanceTable = new Dictionary<string, double>();
 
-        private string GetKey(string method)
-        {
-            return $"{GetType().FullName}#{method}";
-        }
+        //private string GetKey(string method)
+        //{
+        //    return $"{GetType().FullName}#{method}";
+        //}
 
         protected void Start()
         {
-            SafelyCall(OnStart);
+            // Our ride is pretty much safe, no need for extra memory eaters.
+            //SafelyCall(OnStart);
+            OnStart();
         }
 
         protected void Awake()
         {
-            SafelyCall(OnAwake);
+            //SafelyCall(OnAwake);
+            OnAwake();
         }
 
         protected void Update()
         {
-            SafelyCall(OnUpdate);
+            //SafelyCall(OnUpdate);
+            OnUpdate();
         }
 
         protected void LateUpdate()
         {
-            SafelyCall(OnLateUpdate);
+            //SafelyCall(OnLateUpdate);
+            OnLateUpdate();
         }
 
         protected void FixedUpdate()
         {
-            SafelyCall(OnFixedUpdate);
+            //SafelyCall(OnFixedUpdate);
+            OnFixedUpdate();
         }
 
         protected virtual void OnStart() { }
@@ -52,43 +58,43 @@ namespace VRGIN.Core
 
         protected virtual void OnAwake() { }
 
-        private void SafelyCall(Action action)
-        {
-            try
-            {
-                action();
-            }
-            catch (Exception obj)
-            {
-                VRLog.Error(obj);
-            }
-        }
+        //private void SafelyCall(Action action)
+        //{
+        //    try
+        //    {
+        //        action();
+        //    }
+        //    catch (Exception obj)
+        //    {
+        //        VRLog.Error(obj);
+        //    }
+        //}
 
-        public static void DumpTable()
-        {
-            VRLog.Info("DUMP");
-            var stringBuilder = new StringBuilder();
-            var enumerator = PerformanceTable.GetEnumerator();
-            while (enumerator.MoveNext()) stringBuilder.AppendFormat("{1}ms: {0}\n", enumerator.Current.Key, enumerator.Current.Value / (double)Time.realtimeSinceStartup);
-            File.WriteAllText("performance.txt", stringBuilder.ToString());
-        }
+        //public static void DumpTable()
+        //{
+        //    VRLog.Info("DUMP");
+        //    var stringBuilder = new StringBuilder();
+        //    var enumerator = PerformanceTable.GetEnumerator();
+        //    while (enumerator.MoveNext()) stringBuilder.AppendFormat("{1}ms: {0}\n", enumerator.Current.Key, enumerator.Current.Value / (double)Time.realtimeSinceStartup);
+        //    File.WriteAllText("performance.txt", stringBuilder.ToString());
+        //}
 
-        public void Invoke(Action action, float delayInSeconds)
-        {
-            StartCoroutine(_Invoke(action, delayInSeconds));
-        }
+        //public void Invoke(Action action, float delayInSeconds)
+        //{
+        //    StartCoroutine(_Invoke(action, delayInSeconds));
+        //}
 
-        private IEnumerator _Invoke(Action action, float delay)
-        {
-            yield return new WaitForSeconds(delay);
-            try
-            {
-                action();
-            }
-            catch (Exception obj)
-            {
-                VRLog.Error(obj);
-            }
-        }
+        //private IEnumerator _Invoke(Action action, float delay)
+        //{
+        //    yield return new WaitForSeconds(delay);
+        //    try
+        //    {
+        //        action();
+        //    }
+        //    catch (Exception obj)
+        //    {
+        //        VRLog.Error(obj);
+        //    }
+        //}
     }
 }

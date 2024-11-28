@@ -1,5 +1,7 @@
 using UnityEngine;
 using Valve.VR;
+using VRGIN.Core;
+using static SteamVR_Utils;
 
 namespace VRGIN.Controls
 {
@@ -159,12 +161,16 @@ namespace VRGIN.Controls
 
         public void TriggerHapticPulse(ushort durationMicroSec = 500, EVRButtonId buttonId = EVRButtonId.k_EButton_Axis0)
         {
-            _ = SteamVR_Actions.legacy_emulate;
-            var inputSource = _tracking.inputSource;
-            var durationSeconds = (float)((int)durationMicroSec / 1000) / 1000f;
-            var frequency = 100f;
-            var amplitude = 1f;
-            SteamVR_Actions.legacy_emulate.Huptic[inputSource].Execute(0f, durationSeconds, frequency, amplitude);
+            // What comes after is way beyond me, and it doesn't work. The simplest way works, enough for me.
+            //SteamVR.instance.hmd.TriggerHapticPulse((uint)_tracking.inputSource, 0, durationMicroSec);
+            OpenVR.System.TriggerHapticPulse((uint)_tracking.inputSource, 0, durationMicroSec);
+            //_ = SteamVR_Actions.legacy_emulate;
+            //var inputSource = _tracking.inputSource;
+            //var durationSeconds = (float)((int)durationMicroSec / 1000) / 1000f;
+            ////var durationSeconds = 0.5f;
+            //var frequency = 100f;
+            //var amplitude = 1f;
+            //SteamVR_Actions.legacy_emulate.Huptic[inputSource].Execute(0f, durationSeconds, frequency, amplitude);
         }
 
         private void UpdateHairTrigger()

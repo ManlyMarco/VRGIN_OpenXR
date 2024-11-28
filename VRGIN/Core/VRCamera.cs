@@ -10,6 +10,8 @@ namespace VRGIN.Core
 {
     public class VRCamera : ProtectedBehaviour
     {
+        public Camera MainCamera => _Camera;
+
         private delegate void CameraOperation(Camera camera);
 
         private static VRCamera _Instance;
@@ -19,6 +21,7 @@ namespace VRGIN.Core
         private const float MIN_FAR_CLIP_PLANE = 10f;
 
         private Camera _Camera;
+
 
         private Transform _origin;
 
@@ -65,25 +68,22 @@ namespace VRGIN.Core
 
         protected override void OnAwake()
         {
-            try
-            {
-                _Camera = gameObject.AddComponent<Camera>();
-                _Camera.tag = "MainCamera";
-                gameObject.AddComponent<SteamVR_Camera>();
-                TrackedPose = gameObject.AddComponent<TrackedPoseDriver>();
-                TrackedPose.SetPoseSource(TrackedPoseDriver.DeviceType.GenericXRDevice, TrackedPoseDriver.TrackedPose.Center);
-                TrackedPose.updateType = TrackedPoseDriver.UpdateType.UpdateAndBeforeRender;
-                TrackedPose.trackingType = TrackedPoseDriver.TrackingType.RotationAndPosition;
-                SteamCam = GetComponent<SteamVR_Camera>();
-                _ = VR.Settings.MirrorScreen;
-                SteamVR_Camera.sceneResolutionScale = VR.Settings.RenderScale;
-                new GameObject("CenterEyeAnchor").transform.SetParent(SteamCam.head);
-                DontDetroyRootObject(SteamCam.origin.gameObject);
-            }
-            catch (Exception obj)
-            {
-                VRLog.Error(obj);
-            }
+            _Camera = gameObject.AddComponent<Camera>();
+
+            // Why deceive Unity and the game with wrong Main Camera?
+            // simply because of this we had quite a few "fixes" in KKS.
+            //_Camera.tag = "MainCamera";
+
+            gameObject.AddComponent<SteamVR_Camera>();
+            TrackedPose = gameObject.AddComponent<TrackedPoseDriver>();
+            TrackedPose.SetPoseSource(TrackedPoseDriver.DeviceType.GenericXRDevice, TrackedPoseDriver.TrackedPose.Center);
+            TrackedPose.updateType = TrackedPoseDriver.UpdateType.UpdateAndBeforeRender;
+            TrackedPose.trackingType = TrackedPoseDriver.TrackingType.RotationAndPosition;
+            SteamCam = GetComponent<SteamVR_Camera>();
+            _ = VR.Settings.MirrorScreen;
+            SteamVR_Camera.sceneResolutionScale = VR.Settings.RenderScale;
+            new GameObject("CenterEyeAnchor").transform.SetParent(SteamCam.head);
+            DontDetroyRootObject(SteamCam.origin.gameObject);
         }
 
         private void DontDetroyRootObject(GameObject go)
@@ -186,11 +186,10 @@ namespace VRGIN.Core
 
             return true;
         }
-
         private void UpdateCameraConfig()
         {
+            // Null ref here is most likely due to KKS_AmazingNewAccessoryLogic and all the cameras it adds.
             int cullingMask = Slaves.Aggregate(0, (cull, cam) => cull | cam.cullingMask);
-
             // Remove layers that are captured by other cameras (see VRGUI)
             cullingMask |= VR.Interpreter.DefaultCullingMask;
             cullingMask &= ~(LayerMask.GetMask(VR.Context.UILayer, VR.Context.InvisibleLayer));
@@ -247,11 +246,10 @@ namespace VRGIN.Core
             VRLog.Info("{0} components before the additions, {1} after", num, target.GetComponents<Component>().Length);
         }
 
-        protected override void OnUpdate()
-        {
-            base.OnUpdate();
-            if(SteamCam.origin) SteamCam.origin.localScale = Vector3.one * VR.Settings.IPDScale;
-        }
+        //protected override void OnUpdate()
+        //{
+        //    if (SteamCam.origin) SteamCam.origin.localScale = Vector3.one * VR.Settings.IPDScale;
+        //}
 
         public void Refresh()
         {
@@ -271,8 +269,10 @@ namespace VRGIN.Core
         internal void RegisterSlave(CameraSlave slave)
         {
             VRLog.Info("Camera went online: {0}", slave.name);
+
             Slaves.Add(slave);
             UpdateCameraConfig();
+
         }
 
         internal void UnregisterSlave(CameraSlave slave)
@@ -280,6 +280,7 @@ namespace VRGIN.Core
             VRLog.Info("Camera went offline: {0}", slave.name);
             Slaves.Remove(slave);
             UpdateCameraConfig();
+
         }
 
         public void SyncSkybox()

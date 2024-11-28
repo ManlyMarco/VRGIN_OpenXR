@@ -17,7 +17,7 @@ namespace VRGIN.Core
         public static Shortcuts Shortcuts => Context.Settings.Shortcuts;
         public static VRManager Manager => VRManager.Instance;
 
-        public static IInputSimulator Input => VRManager.Instance.Input;
+        public static InputSimulator Input => VRManager.Instance.Input;
 
         public static HMDType HMD => VRManager.Instance.HMD;
         public static bool Active { get; set; }

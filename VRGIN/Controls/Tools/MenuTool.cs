@@ -12,19 +12,15 @@ namespace VRGIN.Controls.Tools
 {
     public class MenuTool : Tool
     {
+        public GUIQuad Gui { get; private set; }
+
         private float pressDownTime;
-
         private Vector2 touchDownPosition;
-
         private WindowsInterop.POINT touchDownMousePosition;
-
         private float timeAbandoned;
 
         private double _DeltaX;
-
         private double _DeltaY;
-
-        public GUIQuad Gui { get; private set; }
 
         public override Texture2D Image => UnityHelper.LoadImage("icon_settings.png");
 
@@ -70,7 +66,7 @@ namespace VRGIN.Controls.Tools
             base.OnStart();
         }
 
-        protected override void OnDestroy()
+        private void OnDestroy()
         {
             if (VR.Quitting)
             {
@@ -99,62 +95,59 @@ namespace VRGIN.Controls.Tools
             base.OnEnable();
             if ((bool)Gui) Gui.gameObject.SetActive(true);
         }
-        
+
         protected override void OnUpdate()
         {
             base.OnUpdate();
-
-            var device = this.Controller;
-
-            if (device.GetPressDown(ButtonMask.Touchpad | ButtonMask.Trigger))
+            var controller = Controller;
+            // Legacy uLong inputs for down/up seem to be broken in this VRGIN.
+            if (controller.GetPressDown(EVRButtonId.k_EButton_SteamVR_Touchpad | EVRButtonId.k_EButton_SteamVR_Trigger))
             {
                 VR.Input.Mouse.LeftButtonDown();
                 pressDownTime = Time.unscaledTime;
             }
 
-            if (device.GetPressUp(ButtonMask.Grip))
+            if (controller.GetPressUp(EVRButtonId.k_EButton_Grip))
             {
-                if (Gui)
+                if ((bool)Gui)
                 {
                     AbandonGUI();
                 }
                 else
                 {
-                    TakeGUI(GUIQuadRegistry.Quads.FirstOrDefault(q => !q.IsOwned));
+                    TakeGUI(GUIQuadRegistry.Quads.FirstOrDefault((GUIQuad q) => !q.IsOwned));
                 }
             }
 
-            if (device.GetTouchDown(ButtonMask.Touchpad))
+            if (controller.GetTouchDown(EVRButtonId.k_EButton_SteamVR_Touchpad))
             {
-                touchDownPosition = device.GetAxis();
+                touchDownPosition = controller.GetAxis();
                 touchDownMousePosition = MouseOperations.GetClientCursorPosition();
             }
-            if (device.GetTouch(ButtonMask.Touchpad) && (Time.unscaledTime - pressDownTime) > 0.3f)
-            {
-                var pos = device.GetAxis();
-                var diff = pos - (VR.HMD == HMDType.Oculus ? Vector2.zero : touchDownPosition);
-                var factor = VR.HMD == HMDType.Oculus ? Time.unscaledDeltaTime * 5 : 1f;
-                // We can only move by integral number of pixels, so accumulate them until we have an integral value
-                _DeltaX += (diff.x * VRGUI.Width * 0.1 * factor);
-                _DeltaY += (-diff.y * VRGUI.Height * 0.2 * factor);
-                
-                int deltaX = (int)(_DeltaX > 0 ? Math.Floor(_DeltaX) : Math.Ceiling(_DeltaX));
-                int deltaY = (int)(_DeltaY > 0 ? Math.Floor(_DeltaY) : Math.Ceiling(_DeltaY));
 
+            if (controller.GetTouch(ButtonMask.Touchpad) && Time.unscaledTime - pressDownTime > 0.3f)
+            {
+                var axis = controller.GetAxis();
+                var vector = axis - (VR.HMD == HMDType.Oculus ? Vector2.zero : touchDownPosition);
+                var factor = VR.HMD == HMDType.Oculus ? Time.unscaledDeltaTime * 5f : 1f;
+                _DeltaX += vector.x * VRGUI.Width * 0.1 * factor;
+                _DeltaY += -vector.y * VRGUI.Height * 0.2 * factor;
+                var deltaX = (int)(_DeltaX > 0.0 ? Math.Floor(_DeltaX) : Math.Ceiling(_DeltaX));
+                var deltaY = (int)(_DeltaY > 0.0 ? Math.Floor(_DeltaY) : Math.Ceiling(_DeltaY));
                 _DeltaX -= deltaX;
                 _DeltaY -= deltaY;
 
                 MoveMouseWithinWindow(deltaX, deltaY);
-                touchDownPosition = pos;
+                //VR.Input.Mouse.MoveMouseBy(num2, num3);
+                touchDownPosition = axis;
             }
 
-            if (device.GetPressUp(ButtonMask.Touchpad | ButtonMask.Trigger))
+            if (controller.GetPressUp(EVRButtonId.k_EButton_SteamVR_Touchpad | EVRButtonId.k_EButton_SteamVR_Trigger))
             {
                 VR.Input.Mouse.LeftButtonUp();
-                pressDownTime = 0;
+                pressDownTime = 0f;
             }
         }
-
         private static void MoveMouseWithinWindow(int deltaX, int deltaY)
         {
             var clientRect = WindowManager.GetClientRect();

@@ -296,6 +296,7 @@
     <Compile Include="VRGIN\Controls\ButtonMask.cs" />
     <Compile Include="VRGIN\Controls\Controller.cs" />
     <Compile Include="VRGIN\Controls\DeviceLegacyAdapter.cs" />
+    <Compile Include="VRGIN\Controls\GrabAction.cs" />
     <Compile Include="VRGIN\Controls\Handlers\BodyRumbleHandler.cs" />
     <Compile Include="VRGIN\Controls\Handlers\MenuHandler.cs" />
     <Compile Include="VRGIN\Controls\HelpText.cs" />
@@ -388,9 +389,6 @@
     <Compile Include="VRGIN\Visuals\PlayerCamera.cs" />
     <Compile Include="VRGIN\Visuals\ProceduralPlane.cs" />
     <Compile Include="VRGIN\Visuals\SimulatedCursor.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="VRGIN\Resource.resources" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

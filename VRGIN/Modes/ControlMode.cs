@@ -215,7 +215,7 @@ namespace VRGIN.Modes
 
         protected void CheckInput()
         {
-            foreach (var shortcut in Shortcuts) shortcut.Evaluate();
+            //foreach (var shortcut in Shortcuts) shortcut.Evaluate();
         }
 
         private void OnDeviceConnected(int idx, bool connected)

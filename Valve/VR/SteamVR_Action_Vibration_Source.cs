@@ -1,4 +1,5 @@
 using UnityEngine;
+using VRGIN.Core;
 
 namespace Valve.VR
 {
@@ -48,7 +49,10 @@ namespace Valve.VR
                 timeLastExecuted = Time.realtimeSinceStartup;
                 var eVRInputError = OpenVR.Input.TriggerHapticVibrationAction(handle, secondsFromNow, durationSeconds, frequency, amplitude, inputSourceHandle);
                 if (eVRInputError != 0) Debug.LogError("<b>[SteamVR]</b> TriggerHapticVibrationAction (" + fullPath + ") error: " + eVRInputError.ToString() + " handle: " + handle);
-                if (onExecute != null) onExecute(vibrationAction, inputSource, secondsFromNow, durationSeconds, frequency, amplitude);
+                if (onExecute != null)
+                {
+                    onExecute(vibrationAction, inputSource, secondsFromNow, durationSeconds, frequency, amplitude);
+                }
             }
         }
     }

@@ -8,9 +8,8 @@ namespace VRGIN.Controls
 {
     public class RumbleManager : ProtectedBehaviour
     {
-        private const float MILLI_TO_SECONDS = 0.001f;
-
-        public const float MIN_INTERVAL = 0.0050000004f;
+        //private const float MILLI_TO_SECONDS = 0.001f;
+        //public const float MIN_INTERVAL = 0.0050000004f;
 
         private HashSet<IRumbleSession> _RumbleSessions = new HashSet<IRumbleSession>();
 
@@ -32,19 +31,29 @@ namespace VRGIN.Controls
         protected override void OnUpdate()
         {
             base.OnUpdate();
-            if (_RumbleSessions.Count <= 0) return;
-            var rumbleSession = _RumbleSessions.Max();
-            var num = Time.unscaledTime - _LastImpulse;
-            if (!_Controller.Tracking.isValid || !(num >= rumbleSession.MilliInterval * 0.001f) || !(num > 0.0050000004f)) return;
-            if (rumbleSession.IsOver)
+            if (_RumbleSessions.Count > 0)
             {
-                _RumbleSessions.Remove(rumbleSession);
-                return;
-            }
+                var session = _RumbleSessions.Max();
+                var timeSinceLastImpulse = Time.unscaledTime - _LastImpulse;
 
-            if (VR.Settings.Rumble) _Controller.Input.TriggerHapticPulse(rumbleSession.MicroDuration);
-            _LastImpulse = Time.unscaledTime;
-            rumbleSession.Consume();
+                if (_Controller.Tracking.isValid && timeSinceLastImpulse >= session.MilliInterval * 0.001f && timeSinceLastImpulse > 0.005f)
+                {
+                    if (session.IsOver)
+                    {
+                        _RumbleSessions.Remove(session);
+                    }
+                    else
+                    {
+                        if (VR.Settings.Rumble)
+                        {
+                            _Controller.Input.TriggerHapticPulse(session.MicroDuration);
+                        }
+                        _LastImpulse = Time.unscaledTime;
+                        session.Consume();
+                    }
+
+                }
+            }
         }
 
         public void StartRumble(IRumbleSession session)

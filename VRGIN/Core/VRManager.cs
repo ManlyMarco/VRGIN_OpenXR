@@ -40,7 +40,7 @@ namespace VRGIN.Core
 
         public ControlMode Mode { get; private set; }
 
-        public IInputSimulator Input { get; set; }
+        public InputSimulator Input { get; internal set; }
 
         public event EventHandler<ModeInitializedEventArgs> ModeInitialized = delegate { };
 
@@ -90,7 +90,7 @@ namespace VRGIN.Core
             HMD = trackingSystemName == "oculus" ? HMDType.Oculus : trackingSystemName == "lighthouse" ? HMDType.Vive : HMDType.Other;
 
             Application.targetFrameRate = 90;
-            Time.fixedDeltaTime = 1f / 90f;
+            //Time.fixedDeltaTime = 1f / 90f;
             Application.runInBackground = true;
 
             DontDestroyOnLoad(SteamVR_Render.instance.gameObject);
@@ -103,6 +103,7 @@ namespace VRGIN.Core
         {
             if (mode == LoadSceneMode.Single)
                 _CheckedCameras.Clear();
+            VRLog.Info($"SceneLoaded:{scene.name}:{mode}");
         }
 
         // A scratch-pad buffer to keep OnUpdate allocation-free.
@@ -111,14 +112,18 @@ namespace VRGIN.Core
         {
             int numCameras = Camera.allCamerasCount;
             if (_cameraBuffer.Length < numCameras)
+            {
                 _cameraBuffer = new Camera[numCameras];
+            }
             Camera.GetAllCameras(_cameraBuffer);
             for(int i = 0; i < numCameras; i++)
             {
                 var camera = _cameraBuffer[i];
                 _cameraBuffer[i] = null;
                 if (_CheckedCameras.Contains(camera))
+                {
                     continue;
+                }
                 _CheckedCameras.Add(camera);
                 var judgement = VR.Interpreter.JudgeCamera(camera);
                 VRLog.Info("Detected new camera {0} Action: {1}", camera.name, judgement);
@@ -138,8 +143,6 @@ namespace VRGIN.Core
                         VR.Camera.Copy(camera, false, true);
                         VR.GUI.AddCamera(camera);
                         break;
-                    case CameraJudgement.Ignore:
-                        break;
                 }
             }
         }
@@ -152,11 +155,6 @@ namespace VRGIN.Core
         private void OnControllersCreated(object sender, EventArgs e)
         {
             ModeInitialized(this, new ModeInitializedEventArgs(Mode));
-        }
-
-        private void OnDisable()
-        {
-            VR.Quitting = true;
         }
 
         public void EnableEffects()

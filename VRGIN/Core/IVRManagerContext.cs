@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 using VRGIN.Visuals;
-using WindowsInput;
 
 namespace VRGIN.Core
 {

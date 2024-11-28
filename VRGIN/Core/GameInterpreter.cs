@@ -20,7 +20,7 @@ namespace VRGIN.Core
 
         public virtual bool IsEveryoneHeaded => Actors.All((IActor a) => a.HasHead);
 
-        public virtual int DefaultCullingMask => LayerMask.GetMask("Default");
+        public virtual int DefaultCullingMask => LayerMask.GetMask("Default", "Chara");
 
         /// <summary>
         /// Finds the first actor who has no head (= is impersonated) or NULL.

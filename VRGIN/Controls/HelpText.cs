@@ -62,9 +62,7 @@ namespace VRGIN.Controls
             text.alignment = TextAnchor.MiddleCenter;
             text.text = _Text;
             _Line = gameObject.AddComponent<LineRenderer>();
-            //_Line.material = new Material(Shader.Find("Sprites/Default"));
             _Line.material = new Material(VR.Context.Materials.Sprite);
-            //_Line.material.renderQueue;
             _Line.SetColors(Color.cyan, Color.cyan);
             _Line.useWorldSpace = false;
             _Line.SetVertexCount(4);
