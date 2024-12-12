@@ -294,6 +294,7 @@
     <Compile Include="Valve\VR\SteamVR_TrackingReferenceManager.cs" />
     <Compile Include="Valve\VR\SteamVR_UpdateModes.cs" />
     <Compile Include="VRGIN\Controls\ButtonMask.cs" />
+    <Compile Include="VRGIN\Controls\Handlers\MenuHandlerGame.cs" />
     <Compile Include="VRGIN\Controls\StudioController.cs" />
     <Compile Include="VRGIN\Controls\Controller.cs" />
     <Compile Include="VRGIN\Controls\DeviceLegacyAdapter.cs" />

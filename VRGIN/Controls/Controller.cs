@@ -207,7 +207,7 @@ namespace VRGIN.Controls
 
             Rumble = gameObject.AddComponent<RumbleManager>();
             gameObject.AddComponent<BodyRumbleHandler>();
-            gameObject.AddComponent<MenuHandler>();
+            gameObject.AddComponent<MenuHandlerGame>();
 
             Model = new GameObject("Model").AddComponent<SteamVR_RenderModel>();
             Model.shader = VRManager.Instance.Context.Materials.StandardShader;
