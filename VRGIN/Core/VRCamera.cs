@@ -186,6 +186,14 @@ namespace VRGIN.Core
 
             return true;
         }
+        public void UpdateCameraBlueprint()
+        {
+            var bestSlave = Slaves.Reverse().FirstOrDefault((slave) => slave.canBeMainCamera);
+            if (bestSlave)
+            {
+                ChangeBlueprint(bestSlave.Camera);
+            }
+        }
         private void UpdateCameraConfig()
         {
             // Null ref here is most likely due to KKS_AmazingNewAccessoryLogic and all the cameras it adds.
@@ -202,11 +210,7 @@ namespace VRGIN.Core
             if (!Slaves.Any((slave) => slave.Camera == _Blueprint))
             {
                 // Try to find a new main camera.
-                var bestSlave = Slaves.Reverse().FirstOrDefault((slave) => slave.canBeMainCamera);
-                if (bestSlave)
-                {
-                    ChangeBlueprint(bestSlave.Camera);
-                }
+                UpdateCameraBlueprint();
             }
         }
 
