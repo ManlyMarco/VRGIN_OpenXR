@@ -272,16 +272,21 @@ namespace VRGIN.Core
 
         internal void RegisterSlave(CameraSlave slave)
         {
-            VRLog.Info("Camera went online: {0}", slave.name);
-            Slaves.Add(slave);
+            VRLog.Debug("Camera went online: {0}", slave.name);
+            if (!Slaves.Contains(slave))
+            {
+                Slaves.Add(slave);
+            }
             UpdateCameraConfig();
         }
 
         internal void UnregisterSlave(CameraSlave slave)
         {
-            VRLog.Info("Camera went offline: {0}", slave.name);
-            Slaves.Remove(slave);
-            UpdateCameraConfig();
+            if (Slaves.Remove(slave))
+            {
+                VRLog.Debug("Camera went offline: {0}", slave.name);
+                UpdateCameraConfig();
+            }
         }
 
         public void SyncSkybox()
