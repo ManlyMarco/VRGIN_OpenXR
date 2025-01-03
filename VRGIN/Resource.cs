@@ -3,8 +3,10 @@ using System.CodeDom.Compiler;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Reflection;
 using System.Resources;
 using System.Runtime.CompilerServices;
+using VRGIN.Core;
 
 namespace VRGIN
 {
@@ -27,7 +29,7 @@ namespace VRGIN
         {
             get
             {
-                if (resourceMan == null) resourceMan = new ResourceManager("VRGIN.Resource", typeof(Resource).Assembly);
+                if (resourceMan == null) resourceMan = new ResourceManager("VRGIN_OpenXR.VRGIN.Resource", typeof(VRGIN.Resource).Assembly);
                 return resourceMan;
             }
         }
