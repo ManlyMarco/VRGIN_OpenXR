@@ -409,11 +409,11 @@ namespace VRGIN.Controls
 
         public enum TrackpadDirection
         {
+            Center,
             Up,
             Down,
             Left,
             Right,
-            Center,
         }
 
         public TrackpadDirection GetTrackpadDirection()
