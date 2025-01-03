@@ -216,7 +216,7 @@ namespace VRGIN.Core
 
         public void CopyFX(Camera blueprint)
         {
-            CopyFX(blueprint.gameObject, gameObject, true);
+            CopyFX(blueprint.gameObject, gameObject, false);
             FixEffectOrder();
         }
 
